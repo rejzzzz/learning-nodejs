@@ -1,0 +1,15 @@
+{
+  "name": "assignment-1",
+  "version": "1.0.0",
+  "description": "index.html\r     about.html\r     contact-me.html\r     404.html\r #### 2. Create your node.js server file index.js and add the code needed to serve the right page according to the url.\r     localhost:8080 should take users to index.html\r     localhost:8080/about should take users to about.html\r     localhost:8080/contact-me should take users to contact-me.html\r     404.html should display any time the user tries to go to a page not listed above.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
