@@ -24,6 +24,6 @@
   "task": "task-name"
 }
 ```
-#### 5. to delete a task, send DELETE request to the url with the task number in the url
+#### 8. to delete a task, send DELETE request to the url with the task number in the url
 ```http://localhost:3000/tasks/1```
 
