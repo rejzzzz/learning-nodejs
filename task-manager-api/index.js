@@ -1,66 +1,69 @@
+require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
+
 const app = express();
-const PORT = 3000
+const PORT = process.env.PORT || 3000;
 
-
-// middleware
+// Middleware to parse JSON requests
 app.use(express.json());
- /* thsi middleware parses json body of 
- imcoming request so it can be accessed by 
- req.body*/
 
-// root route
-app.get("/", (req, res) => {
-    res.send("welcome to task manager api");
-});
-/* home url at http://localhost:PORT 
-// can be accessed @ "/" */ 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log("MongoDB Connected"))
+  .catch(err => console.error("MongoDB Connection Error:", err));
 
+// Define the Task model
+const Task = mongoose.model("Task", new mongoose.Schema({
+    task: { type: String, required: true },
+    completed: { type: Boolean, default: false }
+}));
 
+// Routes
 
-// in-memory array
-let tasks = [];
-
-// get all tasks
-app.get("/tasks", (req, res) => {
-    res.json(tasks);
-});
-/* sends back the current tasks array as json. 
-*/
-
-//add new task
-app.post("/tasks", (req, res) => {
-    const {task} = req.body;
-    if(!tasks) {
-        return res.status(400).json({error: "task is needed"});
-
+// ✔ Create a Task
+app.post("/tasks", async (req, res) => {
+    try {
+        const newTask = await Task.create(req.body);
+        res.status(201).json(newTask);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
-
-    const newTask = { id: tasks.length + 1, task };
-    tasks.push(newTask);
-    res.status(201).json(newTask);
-
 });
-/* takes input as input from req.body
-    if task is missing, sends error(400) else
-    creates a new task with id, task
-    adds this new task in the array
-    resposnds new task. success(201)
 
-*/ 
-
-//delete a task
-app.delete("/tasks/:id", (req, res) => {
-    const {id} = req.params;
-    tasks = tasks.filter((task) => task.id !== parseInt(id));
-    res.json({ message: "task deleted."});
+// ✔ Get All Tasks
+app.get("/tasks", async (req, res) => {
+    try {
+        const tasks = await Task.find();
+        res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
-/** reads input id req.params.id
- * removes the task with the id. eg /tasks/1
- * responds success with a message task deleted.
- */
 
-app.listen(PORT, () => {
-    console.log(`server running on http://localhost:${PORT}`);
-
+// ✔ Update a Task
+app.put("/tasks/:id", async (req, res) => {
+    try {
+        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedTask) return res.status(404).json({ error: "Task not found" });
+        res.json(updatedTask);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 });
+
+//  Delete a Task
+app.delete("/tasks/:id", async (req, res) => {
+    try {
+        const deletedTask = await Task.findByIdAndDelete(req.params.id);
+        if (!deletedTask) return res.status(404).json({ error: "Task not found" });
+        res.json({ message: " Task deleted" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Start Server
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
